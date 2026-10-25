@@ -334,7 +334,7 @@ namespace SupraTest{
 
 
 
-	public Test complex(uint timeout, testFunction func, string err_message = "") {
+	public async Test complex(uint timeout, testFunction func, string err_message = "") {
 		Test result = Test(err_message);
 
 		uint8 template_stdout[20] = "/tmp/vala_XXXXXXXXX".data;
@@ -386,7 +386,8 @@ namespace SupraTest{
 				result.status = TIMEOUT;
 				break;
 			}
-			Thread.usleep(500);
+			Timeout.add(1, complex.callback);
+			yield;
 		}
 
 		Posix.close(fd_out);

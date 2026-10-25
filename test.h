@@ -3,6 +3,6 @@
 
 void test_impl(const char *src, const char *fmt, ...);
 
-# define TEST(fmt, ...) test_impl(#fmt ", " #__VA_ARGS__, fmt, __VA_ARGS__)
+# define TEST(fmt, ...) test_impl(#fmt ", " #__VA_ARGS__, fmt, ##__VA_ARGS__)
 
 #endif
