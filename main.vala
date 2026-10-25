@@ -1,8 +1,27 @@
 
 
-async void main()
+bool option_bonus = false;
+
+const OptionEntry[] options = {
+	{ "bonus", '\0', OptionFlags.NONE, OptionArg.NONE, ref option_bonus, "Build and test the bonus part", null },
+	{ null }
+};
+
+async void main(string[] args)
 {
 	Intl.setlocale();
+	try {
+		var opt_context = new OptionContext ();
+		opt_context.set_help_enabled (true);
+		opt_context.add_main_entries (options, null);
+		opt_context.parse (ref args);
+	}
+	catch (OptionError e) {
+		stderr.printf ("\033[31m[SupraTest]\033[0m %s\n", e.message);
+		stderr.printf ("Run '%s --help' to see a full list of available command line options.\n", args[0]);
+		return;
+	}
+
 	string libftprintf_so;
 	try {
 		libftprintf_so = find_libftprintf ();
