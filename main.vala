@@ -1,104 +1,62 @@
 
-public extern int fake_ft_printf (string fmt, void* list);
-[CCode (cname = "vprintf")]
-public extern int real_ft_printf (string fmt, void* list);
-
-[CCode (cname = "TEST", cheader_filename = "test.h", sentinel = "")]
-public extern void test(string format, ...);
-
-public void describe(string txt) {
-	print("%s\n", txt);
-}
-
-public const string RED = "\033[31m";
-public const string REDL = "\033[91m";
-public const string YELLOW = "\033[93m";
-public const string GREEN = "\033[32m";
-public const string NONE = "\033[0m";
-public const string PURPLE = "\033[35m";
-public const string POINT = YELLOW + "  ➜ " + NONE;
-
-async string async_test_impl(string txt, string format, void* ptr1, void* ptr2){
-	
-	int ret1 = 0;
-	int ret2 = 0;
-	SupraTest.Test? res_you = null;
-	SupraTest.Test? res_real = null;
-	int pending = 2;
-
-	SupraTest.complex.begin (2, () => {
-		ret1 = fake_ft_printf (format, ptr1);
-		return true;
-	}, "", (obj, res) => {
-		res_you = SupraTest.complex.end (res);
-		if (--pending == 0)
-			async_test_impl.callback ();
-	});
-
-	SupraTest.complex.begin (2, () => {
-		ret2 = real_ft_printf (format, ptr2);
-		return true;
-	}, "", (obj, res) => {
-		res_real = SupraTest.complex.end (res);
-		if (--pending == 0)
-			async_test_impl.callback ();
-	});
-
-	yield;
-
-	bool b = true;
-	var sb = new StringBuilder();
-
-	if (ret1 != ret2) {
-		sb.append_printf(POINT + REDL + "return value You: %d, Me: %d\n", ret1, ret2);
-		b = false;
-	}
-
-	if (res_you.stdout != res_real.stdout) {
-		sb.append_printf(POINT + REDL + "output differs: \033[35mYou: %s\033[0m, \033[36mMe: %s\033[0m\n", res_you.stdout, res_real.stdout);
-		b = false;
-	}
-
-	if (b == false) {
-		const string str = RED + "[KO] " + YELLOW + "printf(%s)" + YELLOW + "\n%s";
-		return str.printf(txt, sb.str);
-	}
-	return res_you.msg();
-
-}
-
-public void test_impl(string txt, string format, ...) {
-	nb_tests_start += 1;
-	while (running >= get_num_processors())
-			MainContext.default().iteration(true);
-	var lst1 = va_list();
-	var lst2 = va_list.copy(lst1);
-	void* ptr1 = (void*)lst1;
-	void* ptr2 = (void*)lst2;
-
-	running += 1;
-	async_test_impl.begin(txt, format, ptr1, ptr2, (obj, res) => {
-		var result = async_test_impl.end(res);
-		print ("%s\n", result);
-		running -= 1;
-		nb_tests_finish += 1;
-	});
-}
-
-uint running = 0;
-uint nb_tests_start = 0;
-uint nb_tests_finish = 0;
 
 async void main()
 {
 	Intl.setlocale();
+	load_ft_printf ("./libftprintf.so");
 
-	for (int i = 0; i < 1500; i++)
-	{
-		test("salut");
-	}
-	while (nb_tests_start != nb_tests_finish) {
-		Idle.add(main.callback);
-		yield;
-	}
+	yield describe("%c Test");
+	test_char();
+	yield describe("%s Test");
+	test("%s", "Hello");
+	test("%s", "World");
+	yield describe(null);
+}
+
+
+
+private void test_char () {
+	test("%c", 0); test("%c", 1); test("%c", 2); test("%c", 3); test("%c", 4); test("%c", 5);
+	test("%c", 6); test("%c", 7); test("%c", 8); test("%c", 9); test("%c", 10); test("%c", 11);
+	test("%c", 12); test("%c", 13); test("%c", 14); test("%c", 15); test("%c", 16); test("%c", 17);
+	test("%c", 18); test("%c", 19); test("%c", 20); test("%c", 21); test("%c", 22); test("%c", 23);
+	test("%c", 24); test("%c", 25); test("%c", 26); test("%c", 27); test("%c", 28); test("%c", 29);
+	test("%c", 30); test("%c", 31); test("%c", ' '); test("%c", '!'); test("%c", '"'); test("%c", '#');
+	test("%c", '$'); test("%c", '%'); test("%c", '&'); test("%c", '\''); test("%c", '('); test("%c", ')');
+	test("%c", '*'); test("%c", '+'); test("%c", ','); test("%c", '-'); test("%c", '.'); test("%c", '/');
+	test("%c", '0'); test("%c", '1'); test("%c", '2'); test("%c", '3'); test("%c", '4'); test("%c", '5');
+	test("%c", '6'); test("%c", '7'); test("%c", '8'); test("%c", '9'); test("%c", ':'); test("%c", ';');
+	test("%c", '<'); test("%c", '='); test("%c", '>'); test("%c", '?'); test("%c", '@'); test("%c", 'A');
+	test("%c", 'B'); test("%c", 'C'); test("%c", 'D'); test("%c", 'E'); test("%c", 'F'); test("%c", 'G');
+	test("%c", 'H'); test("%c", 'I'); test("%c", 'J'); test("%c", 'K'); test("%c", 'L'); test("%c", 'M');
+	test("%c", 'N'); test("%c", 'O'); test("%c", 'P'); test("%c", 'Q'); test("%c", 'R'); test("%c", 'S');
+	test("%c", 'T'); test("%c", 'U'); test("%c", 'V'); test("%c", 'W'); test("%c", 'X'); test("%c", 'Y');
+	test("%c", 'Z'); test("%c", '['); test("%c", '\\'); test("%c", ']'); test("%c", '^'); test("%c", '_');
+	test("%c", '`'); test("%c", 'a'); test("%c", 'b'); test("%c", 'c'); test("%c", 'd'); test("%c", 'e');
+	test("%c", 'f'); test("%c", 'g'); test("%c", 'h'); test("%c", 'i'); test("%c", 'j'); test("%c", 'k');
+	test("%c", 'l'); test("%c", 'm'); test("%c", 'n'); test("%c", 'o'); test("%c", 'p'); test("%c", 'q');
+	test("%c", 'r'); test("%c", 's'); test("%c", 't'); test("%c", 'u'); test("%c", 'v'); test("%c", 'w');
+	test("%c", 'x'); test("%c", 'y'); test("%c", 'z'); test("%c", '{'); test("%c", '|'); test("%c", '}');
+	test("%c", '~'); test("%c", 127); test("%c", 128); test("%c", 129); test("%c", 130); test("%c", 131);
+	test("%c", 132); test("%c", 133); test("%c", 134); test("%c", 135); test("%c", 136); test("%c", 137);
+	test("%c", 138); test("%c", 139); test("%c", 140); test("%c", 141); test("%c", 142); test("%c", 143);
+	test("%c", 144); test("%c", 145); test("%c", 146); test("%c", 147); test("%c", 148); test("%c", 149);
+	test("%c", 150); test("%c", 151); test("%c", 152); test("%c", 153); test("%c", 154); test("%c", 155);
+	test("%c", 156); test("%c", 157); test("%c", 158); test("%c", 159); test("%c", 160); test("%c", 161);
+	test("%c", 162); test("%c", 163); test("%c", 164); test("%c", 165); test("%c", 166); test("%c", 167);
+	test("%c", 168); test("%c", 169); test("%c", 170); test("%c", 171); test("%c", 172); test("%c", 173);
+	test("%c", 174); test("%c", 175); test("%c", 176); test("%c", 177); test("%c", 178); test("%c", 179);
+	test("%c", 180); test("%c", 181); test("%c", 182); test("%c", 183); test("%c", 184); test("%c", 185);
+	test("%c", 186); test("%c", 187); test("%c", 188); test("%c", 189); test("%c", 190); test("%c", 191);
+	test("%c", 192); test("%c", 193); test("%c", 194); test("%c", 195); test("%c", 196); test("%c", 197);
+	test("%c", 198); test("%c", 199); test("%c", 200); test("%c", 201); test("%c", 202); test("%c", 203);
+	test("%c", 204); test("%c", 205); test("%c", 206); test("%c", 207); test("%c", 208); test("%c", 209);
+	test("%c", 210); test("%c", 211); test("%c", 212); test("%c", 213); test("%c", 214); test("%c", 215);
+	test("%c", 216); test("%c", 217); test("%c", 218); test("%c", 219); test("%c", 220); test("%c", 221);
+	test("%c", 222); test("%c", 223); test("%c", 224); test("%c", 225); test("%c", 226); test("%c", 227);
+	test("%c", 228); test("%c", 229); test("%c", 230); test("%c", 231); test("%c", 232); test("%c", 233);
+	test("%c", 234); test("%c", 235); test("%c", 236); test("%c", 237); test("%c", 238); test("%c", 239);
+	test("%c", 240); test("%c", 241); test("%c", 242); test("%c", 243); test("%c", 244); test("%c", 245);
+	test("%c", 246); test("%c", 247); test("%c", 248); test("%c", 249); test("%c", 250); test("%c", 251);
+	test("%c", 252); test("%c", 253); test("%c", 254); test("%c", 255);
 }

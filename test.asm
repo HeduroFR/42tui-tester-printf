@@ -2,7 +2,6 @@ section .note.GNU-stack noalloc noexec nowrite progbits
 
 section .text
 global  fake_ft_printf
-extern  ft_printf
 
 %define NSTACK 16
 %define REGS   (NSTACK*8)
@@ -12,6 +11,7 @@ fake_ft_printf:
     mov     rbp, rsp
     sub     rsp, 176
 
+    mov     r10, rdx
     mov     r11, rsi
     mov     eax, [r11]
     mov     r8,  [r11+16]
@@ -19,7 +19,6 @@ fake_ft_printf:
     xor     ecx, ecx
 
 .next:
-
     cmp     eax, 48
     jae     .from_overflow
     mov     rdx, [r8+rax]
@@ -30,7 +29,6 @@ fake_ft_printf:
     add     r9, 8
 
 .store:
-
     cmp     ecx, 5
     jae     .store_stack
     mov     [rsp+REGS+rcx*8], rdx
@@ -42,15 +40,13 @@ fake_ft_printf:
     cmp     ecx, 5+NSTACK
     jne     .next
 
-
     mov     rsi, [rsp+REGS]
     mov     rdx, [rsp+REGS+8]
     mov     rcx, [rsp+REGS+16]
     mov     r8,  [rsp+REGS+24]
     mov     r9,  [rsp+REGS+32]
     xor     eax, eax
-
-    call    ft_printf wrt ..plt
+    call    r10
 
     leave
     ret

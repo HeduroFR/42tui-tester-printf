@@ -11,15 +11,18 @@ printf = cc.find_library('ftprintf',
 dependencies = [
   dependency('glib-2.0'),
   dependency('gio-2.0'),
-  printf
+  dependency('gmodule-2.0'),
+  # printf
 ]
 executable('printf_tester',
   'main.vala', 
   'SupraLeak.vala', 
   'SupraTest.vala',
+  'PrintTester.vala',
   'leak.c',
   'test.asm',
   vala_args: '--pkg=posix',
   c_args: '-w',
-  dependencies: dependencies
+  dependencies: dependencies,
+  install: true
 )
