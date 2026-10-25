@@ -3,13 +3,13 @@ section .note.GNU-stack noalloc noexec nowrite progbits
 section .text
 global  fake_ft_printf
 
-%define NSTACK 16
+%define NSTACK 32
 %define REGS   (NSTACK*8)
 
 fake_ft_printf:
     push    rbp
     mov     rbp, rsp
-    sub     rsp, 176
+    sub     rsp, REGS+48
 
     mov     r10, rdx
     mov     r11, rsi
