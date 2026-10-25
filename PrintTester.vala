@@ -64,16 +64,19 @@ public async string async_test_impl(string txt, string format, void* ptr1, void*
 	}
 
 	if (res_you.stdout_raw.compare (res_real.stdout_raw) != 0) {
-		sb.append_printf(POINT + REDL + "output differs: \033[35m\n   •You: \033[95m%s\033[35m\033[0m\n   \033[36m•Me: \033[96m%s\033[0m\n",
+		sb.append_printf(POINT + REDL + "output differs: \033[35m\n   •You : \033[95m%s\033[35m\033[0m\n   \033[36m•Me  : \033[96m%s\033[0m\n",
 			show_nul (res_you.stdout_raw), show_nul (res_real.stdout_raw));
 		b = false;
 	}
 
 	if (b == false) {
-		const string str = RED + "\n[KO] " + YELLOW + "printf(%s)" + YELLOW + "\n%s";
-		return str.printf(txt, sb.str);
+		if (res_you.status == Status.OK)
+			res_you.status = Status.KO;
 	}
-	return res_you.msg();
+	if (sb.str[0] == '\0') {
+		return res_you.msg(YELLOW + "printf(%s)" + "%s", txt, sb.str);
+	}
+	return res_you.msg(YELLOW + "printf(%s)" + "\n%s", txt, sb.str);
 
 }
 

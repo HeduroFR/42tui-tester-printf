@@ -422,7 +422,6 @@ private void test_upper_x () {
 private void test_mix () {
 	int local = 0;
 
-	// fake_ft_printf forwards at most 37 arguments (5 registers + NSTACK in test.asm)
 	test("%%%c%%%s%%%d%%%i%%%u%%%x%%%X%%%% %%%c%%%s%%%d%%%i%%%u%%%x%%%X%%%% %%%c%%%s%%%d%%%i%%%u%%%x%%%X%%%% %c%%",
 		'A', "42", 42, 42, 42, 42, 42,
 		'B', "-42", -42, -42, -42, -42, 42,
@@ -437,4 +436,34 @@ private void test_mix () {
 	test("%d%s%d%s%d", 1, "a", 2, "b", 3);
 	test("%c%c%c", 0, 'a', 0);
 	test(" %c %s %c ", 0, "after nul", 0);
+
+	// paulo-santana
+	test("%c %s - %p - %d - %i %u - %x - %X %%", '\0', (string?)null, (void*)0xdeadc0de, 0, int.MIN, -1, -1, 200000000);
+	test("%c - %s - %p %d - %i - %u - %x %X %%", '\0', "test", (void*)(-1), 20, -20, -1, -1, 200000000);
+	test("%c - %s - %p %d - %i - %u - %x %X %%", 'a', "test", (void*)0xdeadc0de, 20, -20, -1, -1, 200000000);
+	test("%c - %s - %p %d - %i - %u - %x %X %%", 'b', (string?)null, null, 20, -20, -1, -1, 200000000);
+	test("%c - %s - %p %d - %i - %u - %x %X %%", 'c', "", (void*)(-1), 20, -20, -1, -1, 200000000);
+	test("%i - %s - %p %d - %c - %u - %x %X %%", 20, "", (void*)(-1), '\0', -20, -1, -1, 200000000);
+
+	// cacharle (pft, moulitest)
+	test("%s %d %p %% %x", "bonjour", 42, &local, 42);
+	test("%s%p%d%d%p%s%p%p%s", "a", &local, 1, 2, &very_static, "b", &local, &very_static, "c");
+	test("s: %s, p: %p, d:%d", "astring", &very_static, 42);
+
+	// every conversion with its limits
+	test("%c|%s|%p|%d|%i|%u|%x|%X|%%", 0, (string?)null, null, int.MIN, int.MIN, uint.MAX, uint.MAX, uint.MAX);
+	test("%c|%s|%p|%d|%i|%u|%x|%X|%%", 255, "", (void*)ulong.MAX, int.MAX, int.MAX, 0, 0, 0);
+	test("%%|%X|%x|%u|%i|%d|%p|%s|%c", -1, -1, -1, -1, -1, (void*)(-1), "reverse", 'r');
+	test("%d%d%d%i%i%i%u%u%u%x%x%x%X%X%X", 0, -1, 1, 0, -1, 1, 0, -1, 1, 0, -1, 1, 0, -1, 1);
+	test("%s%s%s%c%c%c%p%p%p", "", (string?)null, "x", 0, 'y', 0, null, &local, null);
+	test("%c%s%p%d%i%u%x%X%%%c%s%p%d%i%u%x%X%%", 'a', "b", null, 1, 2, 3, 4, 5, 'z', "y", &local, -1, -2, -3, -4, -5);
+
+	// conversions inside sentences
+	test("The %s is %d years old and has %u%% of %c", "tester", 42, 100, 'X');
+	test("Address %p holds %d (hex %x / %X)", &local, 255, 255, 255);
+	test("[%s] [%d] [%c] [%x] [%p]", "brackets", -42, '!', 0xabc, null);
+	test("%s\n%d\n%c\n%u\n%x\n%X\n%p\n%%\n", "lines", 1, 'c', 2, 3, 4, &local);
+	test("\t%s\t%d\t%c\t", "tabs", -7, '\t');
+	test("end with conversion %s%d%c", "x", 9, '!');
+	test("%d%%%d%%%d%%", 10, 20, 30);
 }

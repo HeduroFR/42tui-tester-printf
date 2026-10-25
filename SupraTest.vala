@@ -132,25 +132,25 @@ namespace SupraTest{
 			}
 			switch (status) {
 				case LEAK:
-					return @"\033[31m[LEAK] $(this.alloc) Alloc $(this.free) Free $(msg) \033[0m";
+					return @"\033[31m[LEAK] $(this.alloc) Alloc $(this.free) Free $(msg) \033[0m\n";
 				case TIMEOUT:
-					return @"\033[31m[TIMEOUT] $(msg)\033[0m";
+					return @"\033[31m[TIMEOUT] $(msg)\033[0m\n";
 				case SIGILL:
-					return @"\033[31m[SIGILL] $(msg)\033[0m";
+					return @"\033[31m[SIGILL] $(msg)\033[0m\n";
 				case SIGFPE:
-					return @"\033[31m[SIGFPE] $(msg)\033[0m";
+					return @"\033[31m[SIGFPE] $(msg)\033[0m\n";
 				case SIGBUS:
-					return @"\033[31m[SIGBUS] $(msg)\033[0m";
+					return @"\033[31m[SIGBUS] $(msg)\033[0m\n";
 				case SIGSEGV:
-					return @"\033[31m[SIGSEGV] $(msg)\033[0m";
+					return @"\033[31m[SIGSEGV] $(msg)\033[0m\n";
 				case ABORTED:
-					return @"\033[31m[ABORTED] $(msg)\033[0m";
+					return @"\033[31m[ABORTED] $(msg)\033[0m\n";
 				case OK:
 					return "\033[32m[OK]\033[0m";
 				case KO:
 					return msg_ko(msg);
 				default:
-					return "\033[31m[???]\033[0m";
+					return "\033[31m[???]\033[0m\n";
 			}
 		}
 
@@ -164,19 +164,19 @@ namespace SupraTest{
 
 			switch (status) {
 				case LEAK:
-					return @"\033[31m[LEAK] $(this.alloc) Alloc $(this.free) Free $(msg)\033[0m";
+					return @"\033[31m[LEAK] $(this.alloc) Alloc $(this.free) Free $(msg)\033[0m\n";
 				case TIMEOUT:
-					return @"\033[31m[TIMEOUT] $(msg)\033[0m";
+					return @"\033[31m[TIMEOUT] $(msg)\033[0m\n";
 				case SIGILL:
-					return @"\033[31m[SIGILL] $(msg)\033[0m";
+					return @"\033[31m[SIGILL] $(msg)\033[0m\n";
 				case SIGFPE:
-					return @"\033[31m[SIGFPE] $(msg)\033[0m";
+					return @"\033[31m[SIGFPE] $(msg)\033[0m\n";
 				case SIGBUS:
-					return @"\033[31m[SIGBUS] $(msg)\033[0m";
+					return @"\033[31m[SIGBUS] $(msg)\033[0m\n";
 				case SIGSEGV:
-					return @"\033[31m[SIGSEGV] $(msg)\033[0m";
+					return @"\033[31m[SIGSEGV] $(msg)\033[0m\n";
 				case ABORTED:
-					return @"\033[31m[ABORTED] $(msg)\033[0m";
+					return @"\033[31m[ABORTED] $(msg)\033[0m\n";
 				case OK:
 					return @"\033[32m[OK]\033[0m";
 				case KO:
