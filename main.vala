@@ -38,6 +38,7 @@ async void main(string[] args)
 	test_percent();
 	yield describe("%c Test");
 	test_char();
+	test_char_around();
 	yield describe("%s Test");
 	test_string();
 	yield describe("%p Test");
@@ -164,6 +165,49 @@ private void test_char () {
 	test("%c", 240); test("%c", 241); test("%c", 242); test("%c", 243); test("%c", 244); test("%c", 245);
 	test("%c", 246); test("%c", 247); test("%c", 248); test("%c", 249); test("%c", 250); test("%c", 251);
 	test("%c", 252); test("%c", 253); test("%c", 254); test("%c", 255);
+}
+
+private void test_char_around () {
+	test(" %c", 'a');
+	test("%c ", 'a');
+	test(" %c ", 'a');
+	test("  %c  ", 'a');
+	test(" %c ", ' ');
+	test(" %c ", 0);
+	test(" %c", '0' - 256);
+	test("%c ", '0' + 256);
+	test(" %c ", 0x220);
+	test(" %c ", -1);
+	test(" %c ", -129);
+	test("%c%c", 'a', 'b');
+	test("%c%c%c", ' ', ' ', ' ');
+	test(" %c %c %c ", '0', 0, '1');
+	test(" %c %c %c ", ' ', ' ', ' ');
+	test(" %c %c %c ", '1', '2', '3');
+	test(" %c %c %c ", '2', '1', 0);
+	test(" %c %c %c ", 0, '1', '2');
+	test("%c%c%c%c%c", 0, 0, 0, 0, 0);
+	test("%c%c%c%c%c", 'H', 'e', 'l', 'l', 'o');
+	test("%cc%cc%c", 'a', '\t', 'b');
+	test("%cs%cs%c", 'c', 'b', 'a');
+	test("%c%c%c", 'a', '\t', 'b');
+	test("\t%c\n", 'x');
+	test("\n%c\n%c\n", 'x', 'y');
+	test("[%c]", 'x');
+	test("[%c]", 0);
+	test("(%c)(%c)", '(', ')');
+	test("%c%%", 'x');
+	test("%%%c", 'x');
+	test("%%%c%%", '%');
+	test("%c", '%');
+	test("%c%c", '%', 'c');
+	test("char: '%c', next: '%c'", 'a', 'z');
+	test("sdf sdfsdf sd %c\t\v%c", 'h', 'a');
+	test("%c%c\n", '\0', '~');
+	test("%c is a letter and %c is a digit", 'a', '7');
+	test("%c%s%c", '"', "quoted", '"');
+	test("%c%d%c", '<', 42, '>');
+	test("%c %c %c %c %c %c %c %c %c %c", 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j');
 }
 
 private void test_text () {
