@@ -7,8 +7,32 @@ const OptionEntry[] options = {
 	{ null }
 };
 
+void check_update () {
+	const string script = """
+		exec </dev/null
+		before=$(git rev-parse HEAD)
+		timeout 30 git pull -q || exit 0
+		[ "$before" = "$(git rev-parse HEAD)" ] || timeout 600 sh install.sh
+	""";
+	try {
+		string path = Path.get_dirname (FileUtils.read_link ("/proc/self/exe"));
+		if (!FileUtils.test (Path.build_filename (path, ".git"), FileTest.EXISTS))
+			return;
+
+		string[] env = Environ.get ();
+		env = Environ.set_variable (env, "GIT_TERMINAL_PROMPT", "0");
+		env = Environ.set_variable (env, "GIT_SSH_COMMAND", "ssh -o BatchMode=yes");
+
+		string lock = Path.build_filename (path, ".git", "update.lock");
+		Process.spawn_async (path, {"setsid", "flock", "-n", lock, "sh", "-c", script}, env,
+			SpawnFlags.SEARCH_PATH | SpawnFlags.STDOUT_TO_DEV_NULL | SpawnFlags.STDERR_TO_DEV_NULL, null, null);
+	}
+	catch (Error e) {}
+}
+
 async void main(string[] args)
 {
+	check_update();
 	Intl.setlocale();
 	try {
 		var opt_context = new OptionContext ();
