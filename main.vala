@@ -54,6 +54,8 @@ async void main(string[] args)
 	test_upper_x();
 	yield describe("Mix Test");
 	test_mix();
+	if (option_bonus)
+		yield run_bonus_tests();
 	yield describe(null);
 
 	try {
