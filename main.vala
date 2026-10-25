@@ -3,7 +3,15 @@
 async void main()
 {
 	Intl.setlocale();
-	load_ft_printf ("./libftprintf.so");
+	string libftprintf_so;
+	try {
+		libftprintf_so = find_libftprintf ();
+	}
+	catch (Error e) {
+		stderr.printf ("\033[31m[SupraTest]\033[0m %s", e.message);
+		return;
+	}
+	load_ft_printf (libftprintf_so);
 
 	yield describe("%c Test");
 	test_char();
@@ -11,8 +19,8 @@ async void main()
 	test("%s", "Hello");
 	test("%s", "World");
 	yield describe(null);
+	remove_tmp_dir (Path.get_dirname (libftprintf_so));
 }
-
 
 
 private void test_char () {
