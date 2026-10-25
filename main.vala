@@ -38,7 +38,66 @@ async void main(string[] args)
 	test("%s", "Hello");
 	test("%s", "World");
 	yield describe(null);
+
+	try {
+		check_forbidden_functions (libftprintf_so);
+	}
+	catch (Error e) {
+		stderr.printf ("\033[31m[SupraTest]\033[0m %s", e.message);
+	}
 	remove_tmp_dir (Path.get_dirname (libftprintf_so));
+}
+
+void check_forbidden_functions (string library_path) throws Error {
+	print ("\n\033[33m     <------------- [ Forbidden functions ] ------------->\n\033[0m");
+	string output;
+	string errput;
+	int status;
+
+	Process.spawn_sync (null, {"nm", library_path}, null, SpawnFlags.SEARCH_PATH, null, out output, out errput, out status);
+	if (status != 0) {
+		stderr.printf ("\033[31m[SupraTest] Error while checking forbidden functions\033[0m\n");
+		stderr.printf("%s\n", errput);
+		return;
+	}
+
+	var sp = output.split ("\n");
+	const string []allowed = {
+		"write",
+		"malloc",
+		"free",
+		"__stack_chk_fail",
+		"__assert_fail",
+		"__divdi3",
+		"__moddi3",
+		"__udivdi3",
+		"__umoddi3",
+		"__overflow",
+		"__addv",
+		"__subv",
+		"__mulv",
+		"__builtin_trap",
+		"__fortify_fail",
+		"__cxa_throw",
+		"__cxa_rethrow",
+		"__cxa_atexit",
+		"__cxa_finalize",
+		"__gcc_personality_v0"
+	};
+
+	bool is_good = true;
+	foreach (unowned var line in sp) {
+		if (" U " in line) {
+			unowned string func_name = line.offset(line.index_of (" U ") + 3);
+			func_name._delimit ("@", '\0');
+			if (!(func_name in allowed)) {
+				print ("\033[91m[Forbidden Function]: \033[31m%s !\033[0m\n", func_name);
+				is_good = false;
+			}
+		}
+	}
+	if (is_good)
+		print ("\033[32mNo forbidden function found !\033[0m\n");
 }
 
 
