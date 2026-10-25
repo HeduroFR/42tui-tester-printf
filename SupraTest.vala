@@ -1,4 +1,16 @@
 
+public Bytes read_all_bytes(string file) {
+	try {
+		uint8[] contents;
+		FileUtils.get_data(file, out contents);
+		return new Bytes.take((owned)contents);
+	}
+	catch (Error e) {
+		warning ("Error reading file %s: %s", file, e.message);
+		return new Bytes(null);
+	}
+}
+
 public string read_all(string file) {
 	try {
 		string contents;
@@ -37,6 +49,7 @@ namespace SupraTest{
 	public struct Test {
 		public string? 	message;
 		public string? 	stdout;
+		public Bytes?	stdout_raw;
 		public string? 	stderr;
 		public string? 	stdin;
 		public Status	status;
@@ -48,6 +61,7 @@ namespace SupraTest{
 		public Test(string message) {
 			this.message = message;
 			this.stdout = null;
+			this.stdout_raw = null;
 			this.stderr = null;
 			this.stdin = null;
 			this.status = KO;
@@ -393,6 +407,7 @@ namespace SupraTest{
 		Posix.close(fd_out);
 		Posix.close(fd_err);
 		result.stdout = read_all((string)template_stdout);
+		result.stdout_raw = read_all_bytes((string)template_stdout);
 		result.stderr = read_all((string)template_stderr);
 
 		// get SupraLeak alloc/free and remove it

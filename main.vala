@@ -32,11 +32,28 @@ async void main(string[] args)
 	}
 	load_ft_printf (libftprintf_so);
 
+	yield describe("Text Test");
+	test_text();
+	yield describe("%% Test");
+	test_percent();
 	yield describe("%c Test");
 	test_char();
 	yield describe("%s Test");
-	test("%s", "Hello");
-	test("%s", "World");
+	test_string();
+	yield describe("%p Test");
+	test_pointer();
+	yield describe("%d Test");
+	test_d();
+	yield describe("%i Test");
+	test_i();
+	yield describe("%u Test");
+	test_u();
+	yield describe("%x Test");
+	test_x();
+	yield describe("%X Test");
+	test_upper_x();
+	yield describe("Mix Test");
+	test_mix();
 	yield describe(null);
 
 	try {
@@ -145,4 +162,228 @@ private void test_char () {
 	test("%c", 240); test("%c", 241); test("%c", 242); test("%c", 243); test("%c", 244); test("%c", 245);
 	test("%c", 246); test("%c", 247); test("%c", 248); test("%c", 249); test("%c", 250); test("%c", 251);
 	test("%c", 252); test("%c", 253); test("%c", 254); test("%c", 255);
+}
+
+private void test_text () {
+	test("");
+	test("hello, world!");
+	test("\t\n\r\v\f\n");
+	test("\x01\x02\x07\v\b\f\r\n");
+	test("no conversion at all, just some text");
+}
+
+private void test_percent () {
+	test("%%");
+	test(" %%");
+	test("%% ");
+	test(" %% ");
+	test("%%%%");
+	test("%%%%%%");
+	test(" %% %% %% ");
+	test(" %%  %%  %% ");
+	test("%%c");
+	test("100%%");
+	test("%%%c", 'x');
+	test("%%a%%a%%");
+}
+
+private void test_string () {
+	string very_long = string.nfill (5000, 'a');
+
+	test("%s", "");
+	test(" %s", "");
+	test("%s ", "");
+	test(" %s ", "");
+	test("%s", "Hello");
+	test(" %s ", "-");
+	test(" %s %s ", "", "-");
+	test(" %s %s ", " - ", "");
+	test(" %s %s %s %s %s ", " - ", "", "4", "", "2 ");
+	test("%s", (string?)null);
+	test(" NULL %s NULL ", (string?)null);
+	test("%s%s", (string?)null, (string?)null);
+	test("%s", "\0abc");
+	test("%s%s", "sdfd\0fs", "asdfasdf");
+	test("%s", "some string with %s hehe");
+	test(" %s", "can it handle \t and \n?");
+	test("%sx", "{} al$#@@@^&$$^#^@@^$*((&");
+	test("%s%s%s", "And ", "some", "joined");
+	test("%ss%ss%ss", "And ", "some other", "joined");
+	test("%s", "éàü€ unicode ✓");
+	test("%s", very_long);
+}
+
+private void test_pointer () {
+	int local = 42;
+	int *addr = &local;
+
+	test("%p", null);
+	test(" %p ", null);
+	test(" %p %p ", null, null);
+	test("%p", "");
+	test("%p", addr);
+	test("a:%pb:%p", addr, &very_static);
+	test(" %p ", (void*)1);
+	test(" %p ", (void*)15);
+	test(" %p ", (void*)16);
+	test(" %p ", (void*)17);
+	test(" %p ", (void*)(-1));
+	test(" %p ", (void*)(-14523));
+	test(" %p %p ", (void*)long.MIN, (void*)long.MAX);
+	test(" %p %p ", (void*)int.MIN, (void*)int.MAX);
+	test(" %p %p ", (void*)ulong.MAX, (void*)(-ulong.MAX));
+	test("0x%p-", (void*)ulong.MAX);
+	test("%pp%p%p", (void*)(long.MAX - 423856), null, (void*)int.MAX);
+}
+private int very_static = 0;
+
+private void test_d () {
+	test(" %d ", 0);
+	test(" %d ", -1);
+	test(" %d ", 1);
+	test(" %d ", 9);
+	test(" %d ", 10);
+	test(" %d ", 11);
+	test(" %d ", 15);
+	test(" %d ", 16);
+	test(" %d ", 17);
+	test(" %d ", 99);
+	test(" %d ", 100);
+	test(" %d ", 101);
+	test(" %d ", -9);
+	test(" %d ", -10);
+	test(" %d ", -11);
+	test(" %d ", -99);
+	test(" %d ", -100);
+	test(" %d ", -101);
+	test(" %d ", -200000);
+	test(" %d ", int.MAX);
+	test(" %d ", int.MIN);
+	test(" %d ", 0x80000000);
+	test(" %d ", long.MAX);
+	test(" %d ", long.MIN);
+	test(" %d ", uint.MAX);
+	test(" %d ", ulong.MAX);
+	test(" %d ", 122342342423);
+	test("%d%d", 24, -24);
+	test("%dd%dd%d", 1, -2, 3);
+	test(" %d %d %d %d %d %d %d", int.MAX, int.MIN, long.MAX, long.MIN, ulong.MAX, 0, -42);
+}
+
+private void test_i () {
+	test(" %i ", 0);
+	test(" %i ", -1);
+	test(" %i ", 1);
+	test(" %i ", 9);
+	test(" %i ", 10);
+	test(" %i ", 11);
+	test(" %i ", 99);
+	test(" %i ", 100);
+	test(" %i ", 101);
+	test(" %i ", -9);
+	test(" %i ", -10);
+	test(" %i ", -11);
+	test(" %i ", -100);
+	test(" %i ", int.MAX);
+	test(" %i ", int.MIN);
+	test(" %i ", 0x80000000);
+	test(" %i ", long.MAX);
+	test(" %i ", long.MIN);
+	test(" %i ", uint.MAX);
+	test("%isadfsadf%d", -1, 34);
+	test("\tadswfdsf%ifdf%ddfdfsf", 0, 0xfa1afe1);
+	test(" %i %i %i %i %i %i %i", int.MAX, int.MIN, long.MAX, long.MIN, ulong.MAX, 0, -42);
+}
+
+private void test_u () {
+	test(" %u ", 0);
+	test(" %u ", 1);
+	test(" %u ", -1);
+	test(" %u ", 9);
+	test(" %u ", 10);
+	test(" %u ", 11);
+	test(" %u ", 99);
+	test(" %u ", 100);
+	test(" %u ", 101);
+	test(" %u ", -9);
+	test(" %u ", -100);
+	test(" %u ", int.MAX);
+	test(" %u ", int.MIN);
+	test(" %u ", uint.MAX);
+	test(" %u ", 2222222222);
+	test(" %u ", long.MAX);
+	test(" %u ", long.MIN);
+	test(" %u ", 122342342423);
+	test("%uuuuu%uuuuuuuujjsdf%ufsdf\n", 2222222222, 1, -4545);
+	test(" %u %u %u %u %u %u %u", int.MAX, int.MIN, long.MAX, long.MIN, ulong.MAX, 0, -42);
+}
+
+private void test_x () {
+	test(" %x ", 0);
+	test(" %x ", -1);
+	test(" %x ", 1);
+	test(" %x ", 9);
+	test(" %x ", 10);
+	test(" %x ", 11);
+	test(" %x ", 15);
+	test(" %x ", 16);
+	test(" %x ", 17);
+	test(" %x ", 99);
+	test(" %x ", 100);
+	test(" %x ", 101);
+	test(" %x ", -9);
+	test(" %x ", -100);
+	test(" %x ", int.MAX);
+	test(" %x ", int.MIN);
+	test(" %x ", uint.MAX);
+	test(" %x ", long.MAX);
+	test(" %x ", long.MIN);
+	test(" %x ", 0xfa1afe);
+	test("%x%x", 128998, 0);
+	test(" %x %x %x %x %x %x %x", int.MAX, int.MIN, long.MAX, long.MIN, ulong.MAX, 0, -42);
+}
+
+private void test_upper_x () {
+	test(" %X ", 0);
+	test(" %X ", -1);
+	test(" %X ", 1);
+	test(" %X ", 9);
+	test(" %X ", 10);
+	test(" %X ", 11);
+	test(" %X ", 15);
+	test(" %X ", 16);
+	test(" %X ", 17);
+	test(" %X ", 99);
+	test(" %X ", 100);
+	test(" %X ", 101);
+	test(" %X ", -9);
+	test(" %X ", -100);
+	test(" %X ", int.MAX);
+	test(" %X ", int.MIN);
+	test(" %X ", uint.MAX);
+	test(" %X ", long.MAX);
+	test(" %X ", long.MIN);
+	test(" %X ", 0xbafefe);
+	test("%x  %X ", 0xba, 0xef);
+	test(" %X %X %X %X %X %X %X", int.MAX, int.MIN, long.MAX, long.MIN, ulong.MAX, 0, -42);
+}
+
+private void test_mix () {
+	int local = 0;
+
+	// fake_ft_printf forwards at most 37 arguments (5 registers + NSTACK in test.asm)
+	test("%%%c%%%s%%%d%%%i%%%u%%%x%%%X%%%% %%%c%%%s%%%d%%%i%%%u%%%x%%%X%%%% %%%c%%%s%%%d%%%i%%%u%%%x%%%X%%%% %c%%",
+		'A', "42", 42, 42, 42, 42, 42,
+		'B', "-42", -42, -42, -42, -42, 42,
+		'C', "0", 0, 0, 0, 0, 42, 0);
+	test("%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
+		1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+		21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37);
+	test("%c %s %p %d %i %u %x %X %%", 'z', "str", &local, -42, 42, -42, 255, 255);
+	test("asdfasdf%%%%pdf%pdfsf%d ddfsdfsdfd%isadf%c\n", &local, 7, 345, 0);
+	test("____%%%XxXXsdfs%x", 3, 3);
+	test("%s|%c|%d|%s|%c", (string?)null, 0, int.MIN, "", 'x');
+	test("%d%s%d%s%d", 1, "a", 2, "b", 3);
+	test("%c%c%c", 0, 'a', 0);
+	test(" %c %s %c ", 0, "after nul", 0);
 }

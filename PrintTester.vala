@@ -63,8 +63,9 @@ public async string async_test_impl(string txt, string format, void* ptr1, void*
 		b = false;
 	}
 
-	if (res_you.stdout != res_real.stdout) {
-		sb.append_printf(POINT + REDL + "output differs: \033[35m\n   •You: \033[95m%s\033[35m\033[0m\n   \033[36m•Me: \033[96m%s\033[0m\n", res_you.stdout, res_real.stdout);
+	if (res_you.stdout_raw.compare (res_real.stdout_raw) != 0) {
+		sb.append_printf(POINT + REDL + "output differs: \033[35m\n   •You: \033[95m%s\033[35m\033[0m\n   \033[36m•Me: \033[96m%s\033[0m\n",
+			show_nul (res_you.stdout_raw), show_nul (res_real.stdout_raw));
 		b = false;
 	}
 
@@ -74,6 +75,32 @@ public async string async_test_impl(string txt, string format, void* ptr1, void*
 	}
 	return res_you.msg();
 
+}
+
+[CCode (cname = "memchr", cheader_filename = "string.h")]
+private extern void* memchr (void* s, int c, size_t n);
+
+string show_nul (Bytes output) {
+    unowned uint8[] data = output.get_data ();
+    size_t remaining = data.length;
+    var sb = new StringBuilder.sized ((ssize_t) remaining + 16);
+    uint8* ptr = (uint8*) data;
+
+    while (remaining > 0) {
+        uint8* next_nul = (uint8*) memchr (ptr, 0, remaining);
+        if (next_nul == null) {
+            sb.append_len ((string) ptr, (ssize_t) remaining);
+            break;
+        }
+        size_t chunk_len = (size_t) (next_nul - ptr);
+        if (chunk_len > 0) {
+            sb.append_len ((string) ptr, (ssize_t) chunk_len);
+        }
+        sb.append ("\\0");
+        ptr = next_nul + 1;
+        remaining -= (chunk_len + 1);
+    }
+    return (owned)sb.str;
 }
 
 public void test_impl(string txt, string format, ...) {
