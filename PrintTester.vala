@@ -36,7 +36,8 @@ public async string async_test_impl(string txt, string format, void* ptr1, void*
 	int pending = 2;
 
 	SupraTest.complex.begin (2, () => {
-		ret1 = fake_ft_printf (format, ptr1, ft_printf_sym);
+		// runs in a forked child: send the return value back through stderr
+		printerr ("[SupraRet] %d\n", fake_ft_printf (format, ptr1, ft_printf_sym));
 		return true;
 	}, "", (obj, res) => {
 		res_you = SupraTest.complex.end (res);
@@ -45,7 +46,7 @@ public async string async_test_impl(string txt, string format, void* ptr1, void*
 	});
 
 	SupraTest.complex.begin (2, () => {
-		ret2 = real_ft_printf (format, ptr2);
+		printerr ("[SupraRet] %d\n", real_ft_printf (format, ptr2));
 		return true;
 	}, "", (obj, res) => {
 		res_real = SupraTest.complex.end (res);
@@ -55,6 +56,8 @@ public async string async_test_impl(string txt, string format, void* ptr1, void*
 
 	yield;
 
+	ret1 = read_ret (res_you);
+	ret2 = read_ret (res_real);
 	bool b = true;
 	var sb = new StringBuilder();
 
@@ -78,6 +81,15 @@ public async string async_test_impl(string txt, string format, void* ptr1, void*
 	}
 	return res_you.msg(YELLOW + "printf(%s)" + "\n%s", txt, sb.str);
 
+}
+
+/* return value printed by the child, -9999 if it crashed before */
+int read_ret (SupraTest.Test res) {
+	unowned string err = res.stderr ?? "";
+	int idx = err.index_of ("[SupraRet] ");
+	if (idx == -1)
+		return -9999;
+	return int.parse (err.offset (idx + 11));
 }
 
 [CCode (cname = "memchr", cheader_filename = "string.h")]
