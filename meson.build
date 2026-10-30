@@ -1,4 +1,4 @@
-project('printf_tester', ['c', 'vala', 'nasm'])
+project('printf_tester', ['c', 'vala'])
 
 
 dependencies = [
@@ -11,11 +11,10 @@ executable('printf_tester',
   'main.vala',
   'finder_project.vala',
   'SupraLeak.vala', 
-  'SupraTest.vala',
   'PrintTester.vala',
   'BonusTest.vala',
   'leak.c',
-  'test.asm',
+  'capture.c',
   vala_args: '--pkg=posix',
   c_args: '-w',
   dependencies: dependencies,

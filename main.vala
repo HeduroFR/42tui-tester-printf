@@ -1,39 +1,18 @@
 
 
 bool option_bonus = false;
+string? option_report = null;
 
 const OptionEntry[] options = {
 	{ "bonus", '\0', OptionFlags.NONE, OptionArg.NONE, ref option_bonus, "Build and test the bonus part", null },
+	{ "report", '\0', OptionFlags.NONE, OptionArg.FILENAME, ref option_report, "Write a version 1 JSON summary", "PATH" },
 	{ null }
 };
 
-void check_update () {
-	const string script = """
-		exec </dev/null
-		before=$(git rev-parse HEAD)
-		timeout 30 git pull -q || exit 0
-		[ "$before" = "$(git rev-parse HEAD)" ] || timeout 600 sh install.sh
-	""";
-	try {
-		string path = Path.get_dirname (FileUtils.read_link ("/proc/self/exe"));
-		if (!FileUtils.test (Path.build_filename (path, ".git"), FileTest.EXISTS))
-			return;
-
-		string[] env = Environ.get ();
-		env = Environ.set_variable (env, "GIT_TERMINAL_PROMPT", "0");
-		env = Environ.set_variable (env, "GIT_SSH_COMMAND", "ssh -o BatchMode=yes");
-
-		string lock = Path.build_filename (path, ".git", "update.lock");
-		Process.spawn_async (path, {"setsid", "flock", "-n", lock, "sh", "-c", script}, env,
-			SpawnFlags.SEARCH_PATH | SpawnFlags.STDOUT_TO_DEV_NULL | SpawnFlags.STDERR_TO_DEV_NULL, null, null);
-	}
-	catch (Error e) {}
-}
-
 async void main(string[] args)
 {
-	check_update();
-	Intl.setlocale();
+    // Fork builds are pinned: do not mutate source with background git pull.
+    Intl.setlocale();
 	try {
 		var opt_context = new OptionContext ();
 		opt_context.set_help_enabled (true);
@@ -43,16 +22,20 @@ async void main(string[] args)
 	catch (OptionError e) {
 		stderr.printf ("\033[31m[SupraTest]\033[0m %s\n", e.message);
 		stderr.printf ("Run '%s --help' to see a full list of available command line options.\n", args[0]);
-		return;
+		Process.exit(2);
 	}
 
+    if (option_report != null && FileUtils.test(option_report, FileTest.EXISTS)) {
+        printerr("Report destination already exists; choose a fresh path.\n");
+        Process.exit(2);
+    }
 	string libftprintf_so;
 	try {
 		libftprintf_so = find_libftprintf ();
 	}
 	catch (Error e) {
 		stderr.printf ("\033[31m[SupraTest]\033[0m %s", e.message);
-		return;
+		Process.exit(2);
 	}
 	load_ft_printf (libftprintf_so);
 
@@ -87,9 +70,19 @@ async void main(string[] args)
 		check_forbidden_functions (libftprintf_so);
 	}
 	catch (Error e) {
-		stderr.printf ("\033[31m[SupraTest]\033[0m %s", e.message);
-	}
+        stderr.printf("Cannot check forbidden functions: %s\n", e.message);
+        remove_tmp_dir(Path.get_dirname(libftprintf_so));
+        Process.exit(2);
+    }
 	remove_tmp_dir (Path.get_dirname (libftprintf_so));
+    uint total = total_tests(), failed = failed_tests(), errors = error_tests();
+    print("\nSummary: %u tests, %u failed, %u errors\n", total, failed, errors);
+    if (option_report != null) {
+        try {
+            FileUtils.set_contents(option_report, "{\"version\":1,\"total\":%u,\"passed\":%u,\"failed\":%u,\"errors\":%u,\"skipped\":0}\n".printf(total, total-failed-errors, failed, errors));
+        } catch (Error e) { printerr("Cannot write summary: %s\n", e.message); Process.exit(2); }
+    }
+    Process.exit(tester_exit_status());
 }
 
 void check_forbidden_functions (string library_path) throws Error {
@@ -100,9 +93,7 @@ void check_forbidden_functions (string library_path) throws Error {
 
 	Process.spawn_sync (null, {"nm", library_path}, null, SpawnFlags.SEARCH_PATH, null, out output, out errput, out status);
 	if (status != 0) {
-		stderr.printf ("\033[31m[SupraTest] Error while checking forbidden functions\033[0m\n");
-		stderr.printf("%s\n", errput);
-		return;
+        throw new FileError.FAILED("Cannot inspect forbidden functions: %s", errput);
 	}
 
 	var sp = output.split ("\n");
@@ -137,6 +128,7 @@ void check_forbidden_functions (string library_path) throws Error {
 			if (!(func_name in allowed)) {
 				print ("\033[91m[Forbidden Function]: \033[31m%s !\033[0m\n", func_name);
 				is_good = false;
+				record_forbidden();
 			}
 		}
 	}

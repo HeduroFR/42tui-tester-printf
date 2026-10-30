@@ -122,21 +122,13 @@ public string? generate_libftprintf_so (string dir_makefile) throws Error {
 	int wait_status;
 	SpawnFlags flags = SpawnFlags.SEARCH_PATH + SpawnFlags.STDOUT_TO_DEV_NULL;
 	Process.spawn_sync(null, {"make", "all", "-C", dir_makefile}, null, flags, null, null, out errput, out wait_status);
-	if (option_bonus)
-		Process.spawn_sync(null, {"make", "bonus", "-C", dir_makefile}, null, flags + SpawnFlags.STDERR_TO_DEV_NULL, null, null);
-
-
-	if (wait_status != 0) {
-		stderr.printf(p_supra + "Error while running make in %s\n" + p_none, dir_makefile);
-		stderr.printf(p_supra + "\033[0m%s%s\n", errput, p_none);
-		if (!FileUtils.test(@"$dir_makefile/libftprintf.a", FileTest.EXISTS))
-			throw new FileError.ACCES ("Error while running make (no libftprintf.a)\n");
-
-		stderr.printf(p_supra + "Do you want running your last libftprintf.a ? [y/N]");
-		string? answer = stdin.read_line();
-		if (answer == null || answer.strip().ascii_down() != "y")
-			throw new FileError.ACCES ("Error while running make\n");
-	}
+    if (wait_status != 0)
+        throw new FileError.ACCES("Project build failed: %s", errput);
+    if (option_bonus) {
+        Process.spawn_sync(null, {"make", "bonus", "-C", dir_makefile}, null, flags, null, null, out errput, out wait_status);
+        if (wait_status != 0)
+            throw new FileError.ACCES("Bonus build failed: %s", errput);
+    }
 
 	stderr.printf(p_supra + "[Generate] libftprintf.so from libftprintf.a\n" + p_none);
 	string libftprintf_so = extract_libftprintf_so(@"$dir_makefile/libftprintf.a");

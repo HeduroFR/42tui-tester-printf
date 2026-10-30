@@ -1,4 +1,6 @@
-The SupraTester for the 42 school ft_printf (Linux ~~Mac Os~~)
+The SupraTester for the 42 school ft_printf (Linux amd64 and arm64)
+
+This is the 42TUI portability fork of [nda-cunh/printf_tester](https://github.com/nda-cunh/printf_tester), based on commit `53468a42fc2a51d33ffd65d7ef853c51223ac9e6`. See [PORTABILITY.md](PORTABILITY.md) for the runner design, container use, and validation.
 
 # INSTALLATION
 
@@ -11,7 +13,6 @@ The SupraTester for the 42 school ft_printf (Linux ~~Mac Os~~)
 # REQUIREMENTS
 	``vala``
 	``a C compiler (clang or gcc)``
-	``nasm``
 	``meson and ninja``
 
 # NOTES
@@ -29,12 +30,12 @@ and skip every combination that is undefined behaviour (`%#d`, `%05s`, `%.3p`, `
 
 At the end, the tester lists the forbidden functions used by your `libftprintf.a`.
 
-The tester updates itself with `git pull` in the background when it's a git clone.
+This fork does not update itself in the background. Update explicitly with Git.
 
 # SupraTester
 
 It loads your ft_printf and tests it
-asynchronously and fast on several processors.
+sequentially using compiler-generated C calls for the current architecture.
 
 Every test runs in its own process, so a crash or an infinite loop is reported without stopping the others.
 
